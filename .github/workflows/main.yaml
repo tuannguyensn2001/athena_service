@@ -1,5 +1,8 @@
 name: Athena Pipeline
 
+environment:
+  name: staging
+
 on:
   workflow_dispatch:
   push:
