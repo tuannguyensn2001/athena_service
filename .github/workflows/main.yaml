@@ -1,7 +1,6 @@
 name: Athena Pipeline
 
-environment:
-  name: staging
+
 
 on:
   workflow_dispatch:
@@ -13,6 +12,7 @@ on:
 
 jobs:
   migrate:
+    environment: staging
     name: Run migrations
     runs-on: ubuntu-latest
     env:
