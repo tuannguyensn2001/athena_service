@@ -74,7 +74,7 @@ jobs:
           context: ./
           file: ./Dockerfile
           builder: ${{steps.buildx.outputs.name}}
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/athena
+          tags: ${{ secrets.DOCKER_USERNAME }}/athena
       - name: Verify
         run: echo ${{ steps.docker_build.outputs.digest }}
 
