@@ -6,6 +6,7 @@ import (
 	"athena_service/middlewares"
 	"athena_service/policies"
 	"athena_service/services/auth"
+	"athena_service/services/post"
 	"athena_service/services/workshop"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -22,6 +23,10 @@ func Bootstrap(r *gin.Engine, config config.Config, infra infra.Infra) {
 	workshopUsecase := workshop.NewUsecase(workshopRepository, policy)
 	workshopTransport := workshop.NewHttpTransport(workshopUsecase)
 
+	postRepository := post.NewRepository(infra.Db)
+	postUsecase := post.NewUsecase(postRepository, policy)
+	postTransport := post.NewHttpTransport(postUsecase)
+
 	r.GET("/health", func(context *gin.Context) {
 		context.JSON(http.StatusOK, gin.H{
 			"message": "success test ci",
@@ -34,8 +39,11 @@ func Bootstrap(r *gin.Engine, config config.Config, infra infra.Infra) {
 	r.POST("/api/v1/workshops", middlewares.Auth(authUsecase), workshopTransport.Create)
 	r.GET("/api/v1/workshops/own", middlewares.Auth(authUsecase), workshopTransport.GetOwn)
 	r.GET("/api/v1/workshops/code/:code", middlewares.Auth(authUsecase), workshopTransport.GetByCode)
+
+	r.POST("/api/v1/posts", middlewares.Auth(authUsecase), postTransport.Create)
+	r.GET("/api/v1/posts/workshop/:workshopId", middlewares.Auth(authUsecase), postTransport.GetInWorkshop)
 }
 
 func initPolicy(infra infra.Infra) policies.Policy {
-	return policies.NewPolicy()
+	return policies.NewPolicy(infra.Db)
 }

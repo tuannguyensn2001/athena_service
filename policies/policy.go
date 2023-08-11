@@ -1,14 +1,19 @@
 package policies
 
-import "context"
+import (
+	"context"
+	"gorm.io/gorm"
+)
 
 type Policy struct {
-	Account AccountPolicy
+	Account  AccountPolicy
+	Workshop WorkshopPolicy
 }
 
-func NewPolicy() Policy {
+func NewPolicy(db *gorm.DB) Policy {
 	return Policy{
-		Account: NewAccountPolicy(),
+		Account:  NewAccountPolicy(),
+		Workshop: NewWorkshopPolicy(db),
 	}
 }
 
@@ -18,4 +23,8 @@ func (p Policy) IsTeacher(ctx context.Context) (bool, error) {
 
 func (p Policy) IsStudent(ctx context.Context) (bool, error) {
 	return p.Account.IsStudent(ctx)
+}
+
+func (p Policy) IsMember(ctx context.Context, workshopId int) (bool, error) {
+	return p.Workshop.IsMember(ctx, workshopId)
 }
