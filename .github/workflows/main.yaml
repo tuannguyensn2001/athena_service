@@ -6,6 +6,9 @@ on:
     branches:
       - main
 
+env:
+  PORT: ${{ vars.PORT }}
+
 jobs:
   migrate:
     name: Run migrations
@@ -13,7 +16,7 @@ jobs:
 
     steps:
       - name: show env
-        run: echo "my env is ${{ vars.PORT }} "
+        run: echo "my env is : $PORT"
 
       - name: Checkout
         uses: actions/checkout@v2
