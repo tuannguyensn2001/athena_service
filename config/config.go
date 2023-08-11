@@ -1,16 +1,39 @@
 package config
 
+import (
+	"github.com/spf13/viper"
+	"os"
+)
+
+var keys = []string{"DATABASE_URL", "PORT", "APP_NAME"}
+
 type Config struct {
-	DbUrl string
-	Port  string
+	DbUrl   string `mapstructure:"DATABASE_URL"`
+	Port    string `mapsctructure:"PORT"`
+	AppName string `mapstructure:"APP_NAME"`
 }
 
 func Get() (Config, error) {
-	result := Config{
-		Port: "15000",
+	var result Config
+	path, err := os.Getwd()
+	if err != nil {
+		return result, err
 	}
 
-	result.DbUrl = "host=localhost port=5432 user=tuannguyen password='' dbname=athena_go sslmode=disable"
+	viper.AddConfigPath(path)
+	viper.SetConfigType("env")
+	viper.SetConfigName(".env")
+
+	viper.AutomaticEnv()
+	viper.ReadInConfig()
+
+	for _, key := range keys {
+		viper.BindEnv(key)
+	}
+
+	if err := viper.Unmarshal(&result); err != nil {
+		return result, err
+	}
 
 	return result, nil
 }
