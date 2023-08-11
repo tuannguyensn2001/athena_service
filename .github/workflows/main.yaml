@@ -92,5 +92,5 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
           script: |
-            /home/athena/athena_service
+            cd /home/athena/athena_service
             docker-compose up -d --build --no-deps
