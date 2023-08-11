@@ -23,4 +23,4 @@ jobs:
         run: go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 
       - name: Run migrate
-        run: migrate --help
+        run: migrate --path migrations --database postgres://tuannguyensn2001:lYIcxWPF0i4t@ep-cold-sound-41447706.ap-southeast-1.aws.neon.tech/neondb?options=endpoint%3Dep-cold-sound-41447706 up
