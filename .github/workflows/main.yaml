@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: show env
-        run: echo "my env is ${{ secrets.DATABASE_URL }} "
+        run: echo "my env is ${{ vars.PORT }} "
 
       - name: Checkout
         uses: actions/checkout@v2
