@@ -78,3 +78,18 @@ jobs:
       - name: Verify
         run: echo ${{ steps.docker_build.outputs.digest }}
 
+  push:
+    name: Push
+    runs-on: ubuntu-latest
+    needs: build
+    environment: staging
+    steps:
+      - name: access vps
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          script: |
+            pwd
