@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: show env
-        run: echo "my env is : $PORT"
+        run: echo "my env is  $PORT"
 
       - name: Checkout
         uses: actions/checkout@v2
