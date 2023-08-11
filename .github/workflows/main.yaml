@@ -8,9 +8,26 @@ on:
     branches:
       - main
 
+env:
+  VERSION: 1.21
 
 
 jobs:
+  test:
+    name: Run test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.VERSION }}
+      - name: Install dependencies
+        run: go mod download
+      - name: Run tests
+        run: go test ./...
+
   migrate:
     environment: staging
     name: Run migrations
@@ -19,17 +36,13 @@ jobs:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
     steps:
-      - name: show env
-        run: |
-          echo "variable from shell environment : ${{ vars.PORT }}"
-
       - name: Checkout
         uses: actions/checkout@v2
 
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.21
+          go-version: ${{ env.VERSION }}
 
       - name: Install golang-migrate
         run: go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
