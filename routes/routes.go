@@ -24,7 +24,7 @@ func Bootstrap(r *gin.Engine, config config.Config, infra infra.Infra) {
 
 	r.GET("/health", func(context *gin.Context) {
 		context.JSON(http.StatusOK, gin.H{
-			"message": "success",
+			"message": "success test ci",
 		})
 	})
 	r.POST("/api/v1/auth/register", authTransport.Register)
