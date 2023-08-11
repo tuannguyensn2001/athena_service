@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "15000:15000"
+      - "${PORT}:${PORT}"  # Bind the port from .env
     restart: always
     env_file:
       - .env
