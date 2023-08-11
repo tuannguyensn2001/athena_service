@@ -17,7 +17,7 @@ jobs:
     steps:
       - name: show env
         run: |
-          echo "variable from shell environment : $PORT"
+          echo "variable from shell environment : ${{ vars.PORT }}"
 
       - name: Checkout
         uses: actions/checkout@v2
