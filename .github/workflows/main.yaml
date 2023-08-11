@@ -13,6 +13,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+        run: echo "my env is ${{ secrets.DATABASE_URL }} "
 
       - name: Set up Go
         uses: actions/setup-go@v2
