@@ -6,13 +6,14 @@ on:
     branches:
       - main
 
-env:
-  PORT: ${{ vars.PORT }}
+
 
 jobs:
   migrate:
     name: Run migrations
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
     steps:
       - name: show env
@@ -31,4 +32,4 @@ jobs:
         run: go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 
       - name: Run migrate
-        run: migrate --path migrations --database postgres://tuannguyensn2001:lYIcxWPF0i4t@ep-cold-sound-41447706.ap-southeast-1.aws.neon.tech/neondb?options=endpoint%3Dep-cold-sound-41447706 up
+        run: migrate --path migrations --database $DATABASE_URL up
