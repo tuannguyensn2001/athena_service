@@ -56,7 +56,7 @@ func (u usecase) GetInWorkshop(ctx context.Context, workshopId int) ([]entities.
 
 	var posts []entities.Post
 
-	if err := u.repository.GetDB(ctx).Preload("User").Preload("User.Profile").Where("workshop_id = ?", workshopId).
+	if err := u.repository.GetDB(ctx).Preload("Comments").Preload("User").Preload("User.Profile").Where("workshop_id = ?", workshopId).
 		Order("created_at desc").Find(&posts).Error; err != nil {
 		return nil, err
 	}
