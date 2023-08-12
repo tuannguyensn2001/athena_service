@@ -93,4 +93,7 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             cd /home/athena/athena_service
-            docker-compose up -d --build --no-deps
+            docker-compose stop
+            docker-compose rm -f
+            docker-compose pull
+            docker-compose up -d
