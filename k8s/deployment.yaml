@@ -3,6 +3,7 @@ kind: Deployment
 metadata:
   name: deployment-athena
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app: athena

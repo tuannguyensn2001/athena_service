@@ -1,2 +1,3 @@
 .env
 k8s/k8s-vultr.yaml
+k8s/base64.txt
