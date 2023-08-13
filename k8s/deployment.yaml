@@ -19,9 +19,20 @@ spec:
           imagePullPolicy: Always
           env:
             - name: PORT
-              value: "15000"
+              valueFrom:
+                configMapKeyRef:
+                  name: config-athena
+                  key: PORT
+            - name: GIN_MODE
+              valueFrom:
+                configMapKeyRef:
+                  name: config-athena
+                  key: GIN_MODE
             - name: DATABASE_URL
-              value: "postgres://tuannguyensn2001:lYIcxWPF0i4t@ep-cold-sound-41447706.ap-southeast-1.aws.neon.tech/neondb?options=endpoint%3Dep-cold-sound-41447706"
+              valueFrom:
+                secretKeyRef:
+                  key: DATABASE_URL
+                  name: secret-athena
           ports:
             - containerPort: 15000
               protocol: TCP

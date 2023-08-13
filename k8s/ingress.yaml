@@ -5,7 +5,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: athena.mistaken.id.vn
+    - host: athena.dev
       http:
         paths:
           - path: /

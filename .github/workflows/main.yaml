@@ -97,19 +97,19 @@ jobs:
   #            docker-compose rm -f
   #            docker-compose pull
   #            docker-compose up -d
-  k8s:
-    name: Deploy to k8s
-    runs-on: ubuntu-latest
-    environment: staging
-    needs: build
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: setup kubectl
-        uses: actions-hub/kubectl@master
-        env:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-        with:
-          args: |
-            rollout restart -f k8s/deployment.yaml
-
+#  k8s:
+#    name: Deploy to k8s
+#    runs-on: ubuntu-latest
+#    environment: staging
+#    needs: build
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v3
+#      - name: setup kubectl
+#        uses: actions-hub/kubectl@master
+#        env:
+#          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+#        with:
+#          args: |
+#            rollout restart -f k8s/deployment.yaml
+#

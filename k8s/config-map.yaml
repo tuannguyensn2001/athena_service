@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-athena
+data:
+  PORT: "15000"
+  GIN_MODE: "release"
