@@ -108,6 +108,7 @@ jobs:
         uses: actions-hub/kubectl@master
         env:
           KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-      - name: deploy
-        run: |
-          kubectl get pods
+        with:
+          args: |
+            get pods
+
