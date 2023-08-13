@@ -101,6 +101,7 @@ jobs:
     name: Deploy to k8s
     runs-on: ubuntu-latest
     environment: staging
+    needs: build
     steps:
       - name: Checkout
         uses: actions/checkout@v3
