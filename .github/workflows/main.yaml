@@ -111,5 +111,5 @@ jobs:
           KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
         with:
           args: |
-            rollout restart -f deployment.yaml
+            rollout restart -f k8s/deployment.yaml
 
