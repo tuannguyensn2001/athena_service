@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-athena
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: athenaa.mistaken.id.vn
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: service-athena
+                port:
+                  number: 80

@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-athena
+spec:
+  selector:
+    matchLabels:
+      app: athena
+  template:
+    metadata:
+      name: pod-athena
+      labels:
+        app: athena
+    spec:
+      containers:
+        - name: athena
+          image: tuannguyensn2001/athena:latest
+          imagePullPolicy: Always
+          env:
+            - name: PORT
+              value: "15000"
+            - name: DATABASE_URL
+              value: "postgres://tuannguyensn2001:lYIcxWPF0i4t@ep-cold-sound-41447706.ap-southeast-1.aws.neon.tech/neondb?options=endpoint%3Dep-cold-sound-41447706"
+          ports:
+            - containerPort: 15000
+              protocol: TCP
