@@ -27,6 +27,12 @@ func Bootstrap(r *gin.Engine, config config.Config, infra infra.Infra) {
 	postUsecase := post.NewUsecase(postRepository, policy)
 	postTransport := post.NewHttpTransport(postUsecase)
 
+	r.GET("/", func(context *gin.Context) {
+		context.JSON(http.StatusOK, gin.H{
+			"message": "Athena app",
+		})
+	})
+
 	r.GET("/health", func(context *gin.Context) {
 		context.JSON(http.StatusOK, gin.H{
 			"message": "success test ci",
