@@ -29,7 +29,7 @@ func Bootstrap(r *gin.Engine, config config.Config, infra infra.Infra) {
 
 	r.GET("/", func(context *gin.Context) {
 		context.JSON(http.StatusOK, gin.H{
-			"message": "Athena app",
+			"message": "Athena app 123",
 		})
 	})
 

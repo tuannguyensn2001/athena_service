@@ -110,5 +110,5 @@ jobs:
           KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
         with:
           args: |
-            get pods
+            apply -f k8s/deployment.yaml
 
