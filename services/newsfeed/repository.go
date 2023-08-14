@@ -1,4 +1,4 @@
-package post
+package newsfeed
 
 import (
 	"athena_service/base"
