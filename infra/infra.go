@@ -2,6 +2,7 @@ package infra
 
 import (
 	"athena_service/config"
+	"github.com/dgraph-io/badger/v3"
 	"github.com/pusher/pusher-http-go/v5"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -11,6 +12,7 @@ import (
 type Infra struct {
 	Db     *gorm.DB
 	Pusher *pusher.Client
+	Badger *badger.DB
 }
 
 func Get(config config.Config) (Infra, error) {
@@ -29,9 +31,14 @@ func Get(config config.Config) (Infra, error) {
 		Cluster: "ap1",
 		Secure:  true,
 	}
+	bd, err := badger.Open(badger.DefaultOptions("tmp/badger"))
+	if err != nil {
+		return result, err
+	}
 
 	result.Db = db
 	result.Pusher = pusher
+	result.Badger = bd
 
 	return result, nil
 }

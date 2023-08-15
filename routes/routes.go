@@ -16,7 +16,7 @@ func Bootstrap(r *gin.Engine, config config.Config, infra infra.Infra) {
 	policy := initPolicy(infra)
 
 	authRepository := auth.NewRepository(infra.Db)
-	authUsecase := auth.NewUsecase(authRepository)
+	authUsecase := auth.NewUsecase(authRepository, infra.Badger)
 	authTransport := auth.NewHttpTransport(authUsecase)
 
 	workshopRepository := workshop.NewRepository(infra.Db)
