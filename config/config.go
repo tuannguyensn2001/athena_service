@@ -1,8 +1,10 @@
 package config
 
 import (
-	"github.com/spf13/viper"
 	"os"
+
+	"github.com/rs/zerolog/log"
+	"github.com/spf13/viper"
 )
 
 var keys = []string{"DATABASE_URL", "PORT", "APP_NAME"}
@@ -19,6 +21,8 @@ func Get() (Config, error) {
 	if err != nil {
 		return result, err
 	}
+
+	log.Info().Str("path", path).Msg("config path")
 
 	viper.AddConfigPath(path)
 	viper.SetConfigType("env")

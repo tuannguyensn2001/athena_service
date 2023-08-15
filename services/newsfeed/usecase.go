@@ -62,21 +62,33 @@ func (u usecase) CreatePost(ctx context.Context, input dto.CreatePostInput) erro
 
 }
 
-func (u usecase) GetPostsInWorkshop(ctx context.Context, workshopId int) ([]entities.Post, error) {
-	isMember, err := u.policy.IsMember(ctx, workshopId)
+func (u usecase) GetPostsInWorkshop(ctx context.Context, input dto.GetPostInWorkshopInput) (dto.GetPostInWorkshopOutput, error) {
+	var result dto.GetPostInWorkshopOutput
+	isMember, err := u.policy.IsMember(ctx, input.WorkshopId)
 	if err != nil || !isMember {
-		return nil, app.NewForbiddenError("forbidden").WithError(err)
+		return result, app.NewForbiddenError("forbidden").WithError(err)
 	}
 
 	var posts []entities.Post
 
-	if err := u.repository.GetDB(ctx).Preload("User").Preload("User.Profile").Where("workshop_id = ?", workshopId).
+	limit := 3
+	page := input.Page
+
+	if err := u.repository.GetDB(ctx).Preload("User").Preload("User.Profile").Where("workshop_id = ?", input.WorkshopId).
+		Limit(limit).Offset((page - 1) * limit).
 		Order("created_at desc").Find(&posts).Error; err != nil {
-		return nil, err
+		return result, err
+	}
+	var count int64
+	if err := u.repository.GetDB(ctx).Model(&entities.Post{}).Where("workshop_id = ?", input.WorkshopId).Count(&count).Error; err != nil {
+		return result, err
 	}
 
-	return posts, nil
+	result.Data = posts
+	result.Meta.Total = int(count)
+	result.Meta.Page = page
 
+	return result, nil
 }
 
 func (u usecase) GetWorkshopByPostId(ctx context.Context, postId int) (entities.Workshop, error) {

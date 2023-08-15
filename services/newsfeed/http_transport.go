@@ -39,14 +39,26 @@ func (t *httpTransport) GetPostsInWorkshop(ctx *gin.Context) {
 	if err != nil {
 		panic(err)
 	}
-	posts, err := t.usecase.GetPostsInWorkshop(utils.ParseContext(ctx), workshopId)
+
+	page, err := strconv.Atoi(ctx.DefaultQuery("page", "1"))
+	if err != nil {
+		panic(err)
+	}
+
+	input := dto.GetPostInWorkshopInput{
+		WorkshopId: workshopId,
+		Page:       page,
+	}
+
+	data, err := t.usecase.GetPostsInWorkshop(utils.ParseContext(ctx), input)
 	if err != nil {
 		panic(err)
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "success",
-		"data":    posts,
+		"data":    data.Data,
+		"meta":    data.Meta,
 	})
 }
 
