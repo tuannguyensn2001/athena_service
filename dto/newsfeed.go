@@ -10,6 +10,8 @@ type CreateCommentInput struct {
 type GetPostInWorkshopInput struct {
 	Page       int `json:"page" form:"page" binding:"required"`
 	WorkshopId int `json:"workshop_id" form:"workshop_id" binding:"required"`
+	Cursor     int `json:"cursor" form:"cursor"`
+	Limit      int `json:"limit" form:"limit"`
 }
 
 type GetPostInWorkshopOutput struct {

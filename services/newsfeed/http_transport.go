@@ -48,6 +48,11 @@ func (t *httpTransport) GetPostsInWorkshop(ctx *gin.Context) {
 	input := dto.GetPostInWorkshopInput{
 		WorkshopId: workshopId,
 		Page:       page,
+		Limit:      3,
+	}
+	cursor, err := strconv.Atoi(ctx.Query("cursor"))
+	if err == nil {
+		input.Cursor = cursor
 	}
 
 	data, err := t.usecase.GetPostsInWorkshop(utils.ParseContext(ctx), input)

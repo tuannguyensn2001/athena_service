@@ -13,5 +13,5 @@ type Post struct {
 	DeletedAt  *gorm.DeletedAt `json:"deleted_at"`
 	User       *User           `json:"user,omitempty"`
 	Workshop   *Workshop       `json:"workshop,omitempty"`
-	Comments   []Comment       `json:"comments"`
+	Comments   []Comment       `json:"comments,omitempty"`
 }

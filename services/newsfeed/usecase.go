@@ -42,7 +42,7 @@ func (u usecase) CreatePost(ctx context.Context, input dto.CreatePostInput) erro
 		UserId:     user.Id,
 		WorkshopId: input.WorkshopId,
 	}
-	err = u.repository.GetDB(ctx).Create(&post).Error
+	err = u.repository.GetDB(ctx).Preload("User").Create(&post).Error
 	if err != nil {
 		return err
 	}
@@ -53,13 +53,26 @@ func (u usecase) CreatePost(ctx context.Context, input dto.CreatePostInput) erro
 	}
 
 	pusherClient := u.pusher
-	err = pusherClient.Trigger(fmt.Sprintf("newsfeed-workshop-%s", workshop.Code), "new-post", post)
+
+	newPost, err := u.GetDetailPost(ctx, post.Id)
+	if err != nil {
+		return err
+	}
+	err = pusherClient.Trigger(fmt.Sprintf("newsfeed-workshop-%s", workshop.Code), "new-post", newPost)
 	if err != nil {
 		return err
 	}
 
 	return nil
 
+}
+
+func (u usecase) GetDetailPost(ctx context.Context, postId int) (entities.Post, error) {
+	var post entities.Post
+	if err := u.repository.GetDB(ctx).Preload("User").Preload("User.Profile").Where("id = ?", postId).First(&post).Error; err != nil {
+		return post, err
+	}
+	return post, nil
 }
 
 func (u usecase) GetPostsInWorkshop(ctx context.Context, input dto.GetPostInWorkshopInput) (dto.GetPostInWorkshopOutput, error) {
@@ -71,22 +84,34 @@ func (u usecase) GetPostsInWorkshop(ctx context.Context, input dto.GetPostInWork
 
 	var posts []entities.Post
 
-	limit := 3
-	page := input.Page
+	//limit := 3
+	//page := input.Page
 
-	if err := u.repository.GetDB(ctx).Preload("User").Preload("User.Profile").Where("workshop_id = ?", input.WorkshopId).
-		Limit(limit).Offset((page - 1) * limit).
-		Order("created_at desc").Find(&posts).Error; err != nil {
+	//if err := u.repository.GetDB(ctx).Preload("User").Preload("User.Profile").Where("workshop_id = ?", input.WorkshopId).
+	//	.Limit(input.Limit).Find(&posts).Error; err != nil {
+	//	return result, err
+	//}
+	//var count int64
+	//if err := u.repository.GetDB(ctx).Model(&entities.Post{}).Where("workshop_id = ?", input.WorkshopId).Count(&count).Error; err != nil {
+	//	return result, err
+	//}
+	query := u.repository.GetDB(ctx).Preload("User").Preload("User.Profile").Where("workshop_id = ?", input.WorkshopId).Order("id desc").Limit(input.Limit)
+	if input.Cursor != 0 {
+		query = query.Where("id < ?", input.Cursor).Limit(input.Limit)
+	}
+	err = query.Find(&posts).Error
+	if err != nil {
 		return result, err
 	}
-	var count int64
-	if err := u.repository.GetDB(ctx).Model(&entities.Post{}).Where("workshop_id = ?", input.WorkshopId).Count(&count).Error; err != nil {
-		return result, err
+	if len(posts) > 0 {
+		nextCursor := posts[len(posts)-1].Id
+		result.Meta.NextCursor = nextCursor
 	}
 
 	result.Data = posts
-	result.Meta.Total = int(count)
-	result.Meta.Page = page
+
+	//result.Meta.Total = int(count)
+	//result.Meta.Page = page
 
 	return result, nil
 }
