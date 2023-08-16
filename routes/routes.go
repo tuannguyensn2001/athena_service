@@ -50,6 +50,8 @@ func Bootstrap(r *gin.Engine, config config.Config, infra infra.Infra) {
 	r.GET("/api/v1/posts/workshop/:workshopId", middlewares.Auth(authUsecase), newsfeedTransport.GetPostsInWorkshop)
 	r.GET("/api/v1/newsfeeds/comments/post/:postId", middlewares.Auth(authUsecase), newsfeedTransport.GetCommentsInPosts)
 	r.POST("/api/v1/newsfeeds/comments", middlewares.Auth(authUsecase), newsfeedTransport.CreateComment)
+	r.DELETE("/api/v1/newsfeeds/comments/:id", middlewares.Auth(authUsecase), newsfeedTransport.DeleteComment)
+	r.DELETE("/api/v1/newsfeeds/posts/:id", middlewares.Auth(authUsecase), newsfeedTransport.DeletePost)
 }
 
 func initPolicy(infra infra.Infra) policies.Policy {

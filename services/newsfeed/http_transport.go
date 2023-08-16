@@ -3,6 +3,7 @@ package newsfeed
 import (
 	"athena_service/app"
 	"athena_service/dto"
+	"athena_service/entities"
 	"athena_service/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -95,6 +96,38 @@ func (t *httpTransport) CreateComment(ctx *gin.Context) {
 		panic(err)
 	}
 
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "success",
+	})
+}
+
+func (t *httpTransport) DeleteComment(ctx *gin.Context) {
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		panic(err)
+	}
+	err = t.usecase.DeleteComment(utils.ParseContext(ctx), id)
+	if err != nil {
+		panic(err)
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "success",
+		"data": entities.Comment{
+			Id: id,
+		},
+	})
+}
+
+func (t *httpTransport) DeletePost(ctx *gin.Context) {
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		panic(err)
+	}
+	err = t.usecase.DeletePost(utils.ParseContext(ctx), id)
+	if err != nil {
+		panic(err)
+	}
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "success",
 	})

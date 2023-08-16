@@ -18,7 +18,7 @@ type Infra struct {
 func Get(config config.Config) (Infra, error) {
 	result := Infra{}
 	db, err := gorm.Open(postgres.Open(config.DbUrl), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Warn),
+		Logger: logger.Default.LogMode(logger.Info),
 	})
 	if err != nil {
 		return result, err

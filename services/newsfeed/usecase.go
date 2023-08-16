@@ -17,6 +17,7 @@ type usecase struct {
 }
 type IPolicy interface {
 	IsMember(ctx context.Context, workshopId int) (bool, error)
+	IsTeacher(ctx context.Context) (bool, error)
 }
 
 func NewUsecase(repo repo, policy IPolicy, pusher *pusher.Client) usecase {
@@ -75,6 +76,56 @@ func (u usecase) GetDetailPost(ctx context.Context, postId int) (entities.Post, 
 	return post, nil
 }
 
+func (u usecase) GetNumberOfCommentsByListPostId(ctx context.Context, ids []int) (map[int]int, error) {
+	result := make(map[int]int)
+	type Mapping struct {
+		Count  int `gorm:"column:count"`
+		PostId int `gorm:"column:post_id"`
+	}
+	var mapping []Mapping
+	if err := u.repository.GetDB(ctx).Raw("select count(id) as count, post_id from comments where post_id in ? and deleted_at is null group by post_id", ids).Scan(&mapping).Error; err != nil {
+		return result, err
+	}
+	for _, item := range mapping {
+		result[item.PostId] = item.Count
+	}
+	return result, nil
+}
+
+func (u usecase) GetDetailListPost(ctx context.Context, ids []int) ([]dto.GetDetailPostOutput, error) {
+	posts := make([]entities.Post, 0)
+	result := make([]dto.GetDetailPostOutput, 0)
+	if ids == nil || len(ids) == 0 {
+		return result, nil
+	}
+	if err := u.repository.GetDB(ctx).Preload("User").Preload("User.Profile").Where("id in ?", ids).Order("id desc").Find(&posts).Error; err != nil {
+		return result, err
+	}
+
+	numberOfComments, err := u.GetNumberOfCommentsByListPostId(ctx, ids)
+	if err != nil {
+		return result, err
+	}
+
+	for _, item := range posts {
+		result = append(result, dto.GetDetailPostOutput{
+			Id:               item.Id,
+			Content:          item.Content,
+			UserId:           item.UserId,
+			WorkshopId:       item.WorkshopId,
+			PinnedAt:         item.PinnedAt,
+			CreatedAt:        item.CreatedAt,
+			UpdatedAt:        item.UpdatedAt,
+			DeletedAt:        item.DeletedAt,
+			User:             item.User,
+			Workshop:         item.Workshop,
+			NumberOfComments: numberOfComments[item.Id],
+		})
+	}
+
+	return result, nil
+}
+
 func (u usecase) GetPostsInWorkshop(ctx context.Context, input dto.GetPostInWorkshopInput) (dto.GetPostInWorkshopOutput, error) {
 	var result dto.GetPostInWorkshopOutput
 	isMember, err := u.policy.IsMember(ctx, input.WorkshopId)
@@ -82,36 +133,26 @@ func (u usecase) GetPostsInWorkshop(ctx context.Context, input dto.GetPostInWork
 		return result, app.NewForbiddenError("forbidden").WithError(err)
 	}
 
-	var posts []entities.Post
-
-	//limit := 3
-	//page := input.Page
-
-	//if err := u.repository.GetDB(ctx).Preload("User").Preload("User.Profile").Where("workshop_id = ?", input.WorkshopId).
-	//	.Limit(input.Limit).Find(&posts).Error; err != nil {
-	//	return result, err
-	//}
-	//var count int64
-	//if err := u.repository.GetDB(ctx).Model(&entities.Post{}).Where("workshop_id = ?", input.WorkshopId).Count(&count).Error; err != nil {
-	//	return result, err
-	//}
-	query := u.repository.GetDB(ctx).Preload("User").Preload("User.Profile").Where("workshop_id = ?", input.WorkshopId).Order("id desc").Limit(input.Limit)
+	//var posts []entities.Post
+	var ids []int
+	query := u.repository.GetDB(ctx).Model(&entities.Post{}).Select("id").Where("workshop_id = ? and pinned_at is not null ", input.WorkshopId).Order("id desc").Limit(input.Limit)
 	if input.Cursor != 0 {
 		query = query.Where("id < ?", input.Cursor).Limit(input.Limit)
 	}
-	err = query.Find(&posts).Error
+	err = query.Find(&ids).Error
 	if err != nil {
 		return result, err
 	}
-	if len(posts) > 0 {
-		nextCursor := posts[len(posts)-1].Id
+	if len(ids) > 0 {
+		nextCursor := ids[len(ids)-1]
 		result.Meta.NextCursor = nextCursor
+	}
+	posts, err := u.GetDetailListPost(ctx, ids)
+	if err != nil {
+		return result, err
 	}
 
 	result.Data = posts
-
-	//result.Meta.Total = int(count)
-	//result.Meta.Page = page
 
 	return result, nil
 }
@@ -173,6 +214,56 @@ func (u usecase) CreateComment(ctx context.Context, input dto.CreateCommentInput
 		return err
 	}
 	go u.pusher.Trigger(fmt.Sprintf("newsfeed-post-%d", input.PostId), "new-comment", comment)
+
+	return nil
+
+}
+
+func (u usecase) DeletePost(ctx context.Context, postId int) error {
+	var post entities.Post
+	if err := u.repository.GetDB(ctx).Preload("Workshop").Where("id = ?", postId).First(&post).Error; err != nil {
+		return err
+	}
+	workshop := post.Workshop
+	isTeacher, err := u.policy.IsTeacher(ctx)
+	if err != nil || !isTeacher {
+		return app.NewForbiddenError("forbidden").WithError(err)
+	}
+	isMember, err := u.policy.IsMember(ctx, workshop.Id)
+	if err != nil || !isMember {
+		return app.NewForbiddenError("forbidden").WithError(err)
+	}
+
+	err = u.repository.GetDB(ctx).Delete(&entities.Post{}, postId).Error
+	if err != nil {
+		return err
+	}
+	go u.pusher.Trigger(fmt.Sprintf("newsfeed-workshop-%s", workshop.Code), "delete-post", postId)
+	return nil
+
+}
+
+func (u usecase) DeleteComment(ctx context.Context, commentId int) error {
+	var comment entities.Comment
+	if err := u.repository.GetDB(ctx).Preload("Post").Preload("Post.Workshop").Where("id  = ?", commentId).First(&comment).Error; err != nil {
+		return err
+	}
+	post := comment.Post
+	workshop := post.Workshop
+	isTeacher, err := u.policy.IsTeacher(ctx)
+	if err != nil || !isTeacher {
+		return app.NewForbiddenError("forbidden").WithError(err)
+	}
+	isMember, err := u.policy.IsMember(ctx, workshop.Id)
+	if err != nil || !isMember {
+		return app.NewForbiddenError("forbidden").WithError(err)
+	}
+
+	//err = u.repository.GetDB(ctx).Delete(&entities.Comment{}, commentId).Error
+	//if err != nil {
+	//	return err
+	//}
+	go u.pusher.Trigger(fmt.Sprintf("newsfeed-post-%d", post.Id), "delete-comment", commentId)
 
 	return nil
 
