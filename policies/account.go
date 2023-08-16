@@ -3,13 +3,15 @@ package policies
 import (
 	"athena_service/utils"
 	"context"
+	"gorm.io/gorm"
 )
 
 type AccountPolicy struct {
+	Db *gorm.DB
 }
 
-func NewAccountPolicy() AccountPolicy {
-	return AccountPolicy{}
+func NewAccountPolicy(db *gorm.DB) AccountPolicy {
+	return AccountPolicy{Db: db}
 }
 
 func (p AccountPolicy) IsTeacher(ctx context.Context) (bool, error) {

@@ -12,7 +12,7 @@ type Policy struct {
 
 func NewPolicy(db *gorm.DB) Policy {
 	return Policy{
-		Account:  NewAccountPolicy(),
+		Account:  NewAccountPolicy(db),
 		Workshop: NewWorkshopPolicy(db),
 	}
 }
@@ -27,4 +27,8 @@ func (p Policy) IsStudent(ctx context.Context) (bool, error) {
 
 func (p Policy) IsMember(ctx context.Context, workshopId int) (bool, error) {
 	return p.Workshop.IsMember(ctx, workshopId)
+}
+
+func (p Policy) IsTeacherInWorkshop(ctx context.Context, workshopId int) (bool, error) {
+	return p.Workshop.IsTeacherInWorkshop(ctx, workshopId)
 }

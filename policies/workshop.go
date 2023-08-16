@@ -30,3 +30,16 @@ func (p WorkshopPolicy) IsMember(ctx context.Context, workshopId int) (bool, err
 	}
 	return true, nil
 }
+
+func (p WorkshopPolicy) IsTeacherInWorkshop(ctx context.Context, workshopId int) (bool, error) {
+	user, err := utils.GetUserFromContext(ctx)
+	if err != nil {
+		return false, err
+	}
+	var member entities.Member
+	err = p.db.Where("user_id = ? AND workshop_id = ?", user.Id, workshopId).First(&member).Error
+	if err != nil {
+		return false, err
+	}
+	return member.Role == "teacher", nil
+}
