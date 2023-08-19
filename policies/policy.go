@@ -32,3 +32,7 @@ func (p Policy) IsMember(ctx context.Context, workshopId int) (bool, error) {
 func (p Policy) IsTeacherInWorkshop(ctx context.Context, workshopId int) (bool, error) {
 	return p.Workshop.IsTeacherInWorkshop(ctx, workshopId)
 }
+
+func (p Policy) IsStudentWithId(ctx context.Context, id int) (bool, error) {
+	return p.Account.IsStudentWithId(ctx, id)
+}

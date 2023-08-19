@@ -16,4 +16,5 @@ type Workshop struct {
 	Grade               string `json:"grade" gorm:"column:grade"`
 	CreatedAt           int64  `json:"created_at" gorm:"column:created_at"`
 	UpdatedAt           int64  `json:"updated_at" gorm:"column:updated_at"`
+	IsLock              bool   `json:"is_lock" gorm:"column:is_lock"`
 }

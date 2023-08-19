@@ -1,0 +1,1 @@
+alter table members drop column status;

@@ -9,4 +9,5 @@ type Member struct {
 	UpdatedAt  int64     `json:"updated_at" gorm:"column:updated_at"`
 	User       *User     `json:"user,omitempty"`
 	Workshop   *Workshop `json:"workshop,omitempty"`
+	Status     int       `json:"status" gorm:"column:status"`
 }

@@ -2,6 +2,7 @@ package workshop
 
 import (
 	"athena_service/app"
+	"athena_service/constant"
 	"athena_service/dto"
 	"athena_service/entities"
 	"athena_service/utils"
@@ -57,6 +58,7 @@ func (u usecase) Create(ctx context.Context, input dto.CreateWorkshopInput) erro
 			IsShow:              true,
 			Subject:             input.Subject,
 			Grade:               input.Grade,
+			IsLock:              false,
 		}
 
 		err := u.repository.Create(ctx, &workshop)
@@ -67,6 +69,7 @@ func (u usecase) Create(ctx context.Context, input dto.CreateWorkshopInput) erro
 			WorkshopId: workshop.Id,
 			UserId:     user.Id,
 			Role:       "teacher",
+			Status:     constant.ACTIVE,
 		}
 		err = u.repository.Create(ctx, &member)
 		if err != nil {

@@ -2,10 +2,12 @@ package routes
 
 import (
 	"athena_service/config"
+	"athena_service/constant"
 	"athena_service/infra"
 	"athena_service/middlewares"
 	"athena_service/policies"
 	"athena_service/services/auth"
+	"athena_service/services/member"
 	"athena_service/services/newsfeed"
 	"athena_service/services/workshop"
 	"github.com/gin-gonic/gin"
@@ -26,6 +28,13 @@ func Bootstrap(r *gin.Engine, config config.Config, infra infra.Infra) {
 	newsfeedRepository := newsfeed.NewRepository(infra.Db)
 	newsfeedUsecase := newsfeed.NewUsecase(newsfeedRepository, policy, infra.Pusher)
 	newsfeedTransport := newsfeed.NewHttpTransport(newsfeedUsecase)
+
+	memberRepsitory := member.NewRepository(infra.Db)
+	memberUsecase := member.NewUsecase(memberRepsitory, policy)
+	memberTransport := member.NewTransport(memberUsecase)
+
+	checkRole := middlewares.Role(policy)
+	checkAuth := middlewares.Auth(authUsecase)
 
 	r.GET("/", func(context *gin.Context) {
 		context.JSON(http.StatusOK, gin.H{
@@ -52,6 +61,9 @@ func Bootstrap(r *gin.Engine, config config.Config, infra infra.Infra) {
 	r.POST("/api/v1/newsfeeds/comments", middlewares.Auth(authUsecase), newsfeedTransport.CreateComment)
 	r.DELETE("/api/v1/newsfeeds/comments/:id", middlewares.Auth(authUsecase), newsfeedTransport.DeleteComment)
 	r.DELETE("/api/v1/newsfeeds/posts/:id", middlewares.Auth(authUsecase), newsfeedTransport.DeletePost)
+
+	r.POST("/api/v1/members/student", checkAuth, checkRole(constant.TEACHER), memberTransport.AddStudent)
+	r.POST("/api/v1/members/student/request-join", checkAuth, checkRole(constant.STUDENT), memberTransport.StudentRequestJoin)
 }
 
 func initPolicy(infra infra.Infra) policies.Policy {

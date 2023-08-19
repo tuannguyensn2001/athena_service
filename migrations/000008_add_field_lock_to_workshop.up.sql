@@ -1,0 +1,1 @@
+alter table workshops add column is_lock boolean default false;

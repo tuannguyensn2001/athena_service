@@ -1,0 +1,1 @@
+alter table workshops drop column is_lock;

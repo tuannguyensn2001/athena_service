@@ -1,6 +1,7 @@
 package policies
 
 import (
+	"athena_service/constant"
 	"athena_service/entities"
 	"athena_service/utils"
 	"context"
@@ -37,7 +38,7 @@ func (p WorkshopPolicy) IsTeacherInWorkshop(ctx context.Context, workshopId int)
 		return false, err
 	}
 	var member entities.Member
-	err = p.db.Where("user_id = ? AND workshop_id = ?", user.Id, workshopId).First(&member).Error
+	err = p.db.Where("user_id = ? AND workshop_id = ? and status = ?", user.Id, workshopId, constant.ACTIVE).First(&member).Error
 	if err != nil {
 		return false, err
 	}
