@@ -10,9 +10,11 @@ import (
 var keys = []string{"DATABASE_URL", "PORT", "APP_NAME"}
 
 type Config struct {
-	DbUrl   string `mapstructure:"DATABASE_URL"`
-	Port    string `mapsctructure:"PORT"`
-	AppName string `mapstructure:"APP_NAME"`
+	DbUrl     string `mapstructure:"DATABASE_URL"`
+	Port      string `mapsctructure:"PORT"`
+	AppName   string `mapstructure:"APP_NAME"`
+	SearchUrl string `mapstructure:"SEARCH_URL"`
+	SearchKey string `mapstructure:"SEARCH_KEY"`
 }
 
 func Get() (Config, error) {

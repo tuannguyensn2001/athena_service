@@ -18,7 +18,7 @@ func Bootstrap(r *gin.Engine, config config.Config, infra infra.Infra) {
 	policy := initPolicy(infra)
 
 	authRepository := auth.NewRepository(infra.Db)
-	authUsecase := auth.NewUsecase(authRepository, infra.Badger)
+	authUsecase := auth.NewUsecase(authRepository, infra.Badger, infra.Search)
 	authTransport := auth.NewHttpTransport(authUsecase)
 
 	workshopRepository := workshop.NewRepository(infra.Db)
@@ -64,6 +64,7 @@ func Bootstrap(r *gin.Engine, config config.Config, infra infra.Infra) {
 
 	r.POST("/api/v1/members/student", checkAuth, checkRole(constant.TEACHER), memberTransport.AddStudent)
 	r.POST("/api/v1/members/student/request-join", checkAuth, checkRole(constant.STUDENT), memberTransport.StudentRequestJoin)
+	r.GET("/api/v1/members/students/workshop/:id", checkAuth, checkRole(constant.TEACHER), memberTransport.GetStudent)
 }
 
 func initPolicy(infra infra.Infra) policies.Policy {

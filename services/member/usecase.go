@@ -34,7 +34,7 @@ func (u usecase) GetStudent(ctx context.Context, workshopId int) ([]entities.Use
 
 	var ids []int
 
-	if err := u.repository.GetDB(ctx).Model(&entities.Member{}).Select("user_id").Where("workshop_id = ? and role = ? and status = ?", workshopId, constant.TEACHER, constant.ACTIVE).Find(&ids).Error; err != nil {
+	if err := u.repository.GetDB(ctx).Model(&entities.Member{}).Select("user_id").Where("workshop_id = ? and role = ? and status = ?", workshopId, constant.STUDENT, constant.ACTIVE).Find(&ids).Error; err != nil {
 		return nil, err
 	}
 
@@ -48,18 +48,24 @@ func (u usecase) GetStudent(ctx context.Context, workshopId int) ([]entities.Use
 }
 
 func (u usecase) AddStudent(ctx context.Context, input dto.AddStudentInput) error {
+
+	var user entities.User
+	if err := u.repository.GetDB(ctx).Where("phone = ?", input.Phone).First(&user).Error; err != nil {
+		return err
+	}
+
 	isTeacher, err := u.policy.IsTeacherInWorkshop(ctx, input.WorkshopId)
 	if err != nil || !isTeacher {
 		return app.NewForbiddenError("forbidden").WithError(err)
 	}
-	isStudent, err := u.policy.IsStudentWithId(ctx, input.UserId)
+	isStudent, err := u.policy.IsStudentWithId(ctx, user.Id)
 	if err != nil || !isStudent {
 		return app.NewForbiddenError("forbidden").WithError(err)
 	}
 
 	var count int64
 	if err := u.repository.GetDB(ctx).Model(&entities.Member{}).
-		Where("workshop_id = ? and user_id = ? and role = ?", input.WorkshopId, input.UserId, constant.STUDENT).
+		Where("workshop_id = ? and user_id = ? and role = ?", input.WorkshopId, user.Id, constant.STUDENT).
 		Count(&count).Error; err != nil {
 		return err
 	}
@@ -69,7 +75,7 @@ func (u usecase) AddStudent(ctx context.Context, input dto.AddStudentInput) erro
 
 	member := entities.Member{
 		WorkshopId: input.WorkshopId,
-		UserId:     input.UserId,
+		UserId:     user.Id,
 		Role:       constant.STUDENT,
 		Status:     constant.ACTIVE,
 	}

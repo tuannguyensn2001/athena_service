@@ -11,7 +11,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dgraph-io/badger/v3"
+	"github.com/go-faker/faker/v4"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/meilisearch/meilisearch-go"
+	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"time"
@@ -21,13 +24,15 @@ type usecase struct {
 	repository repo
 	secretKey  string
 	badger     *badger.DB
+	search     *meilisearch.Client
 }
 
-func NewUsecase(repo repo, badger *badger.DB) usecase {
-	return usecase{repository: repo, secretKey: "secret", badger: badger}
+func NewUsecase(repo repo, badger *badger.DB, search *meilisearch.Client) usecase {
+	return usecase{repository: repo, secretKey: "secret", badger: badger, search: search}
 }
 
 func (u usecase) Register(ctx context.Context, input dto.RegisterInput) error {
+	input.Phone = faker.Phonenumber()
 	_, err := u.repository.FindByPhone(ctx, input.Phone)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return err
@@ -42,6 +47,7 @@ func (u usecase) Register(ctx context.Context, input dto.RegisterInput) error {
 	}
 
 	err = u.repository.Transaction(ctx, func(ctx context.Context) error {
+		input.Username = faker.Name()
 		user := entities.User{
 			Phone:    input.Phone,
 			Email:    input.Email,
@@ -62,6 +68,17 @@ func (u usecase) Register(ctx context.Context, input dto.RegisterInput) error {
 		if err != nil {
 			return err
 		}
+
+		payload := map[string]interface{}{
+			"user_id":  user.Id,
+			"username": profile.Username,
+			"id":       user.Id,
+		}
+		task, err := u.search.Index("users").AddDocuments(payload)
+		if err != nil {
+			return err
+		}
+		log.Info().Interface("task", task).Msg("add user to search")
 
 		return nil
 
@@ -137,7 +154,7 @@ func (u usecase) Verify(ctx context.Context, token string) (entities.User, error
 	return user, nil
 }
 
-func (u *usecase) GetUserFromCache(ctx context.Context, id int) (entities.User, error) {
+func (u usecase) GetUserFromCache(ctx context.Context, id int) (entities.User, error) {
 	var user entities.User
 	err := u.badger.View(func(txn *badger.Txn) error {
 		key := fmt.Sprintf("user_%d", id)

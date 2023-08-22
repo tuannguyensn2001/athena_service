@@ -3,6 +3,7 @@ package infra
 import (
 	"athena_service/config"
 	"github.com/dgraph-io/badger/v3"
+	"github.com/meilisearch/meilisearch-go"
 	"github.com/pusher/pusher-http-go/v5"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -13,6 +14,7 @@ type Infra struct {
 	Db     *gorm.DB
 	Pusher *pusher.Client
 	Badger *badger.DB
+	Search *meilisearch.Client
 }
 
 func Get(config config.Config) (Infra, error) {
@@ -36,9 +38,15 @@ func Get(config config.Config) (Infra, error) {
 		return result, err
 	}
 
+	search := meilisearch.NewClient(meilisearch.ClientConfig{
+		Host:   config.SearchUrl,
+		APIKey: config.SearchKey,
+	})
+
 	result.Db = db
 	result.Pusher = pusher
 	result.Badger = bd
+	result.Search = search
 
 	return result, nil
 }
