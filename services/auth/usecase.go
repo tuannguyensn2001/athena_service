@@ -14,7 +14,6 @@ import (
 	"github.com/go-faker/faker/v4"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/meilisearch/meilisearch-go"
-	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"time"
@@ -69,16 +68,16 @@ func (u usecase) Register(ctx context.Context, input dto.RegisterInput) error {
 			return err
 		}
 
-		payload := map[string]interface{}{
-			"user_id":  user.Id,
-			"username": profile.Username,
-			"id":       user.Id,
-		}
-		task, err := u.search.Index("users").AddDocuments(payload)
-		if err != nil {
-			return err
-		}
-		log.Info().Interface("task", task).Msg("add user to search")
+		//payload := map[string]interface{}{
+		//	"user_id":  user.Id,
+		//	"username": profile.Username,
+		//	"id":       user.Id,
+		//}
+		//task, err := u.search.Index("users").AddDocuments(payload)
+		//if err != nil {
+		//	return err
+		//}
+		//log.Info().Interface("task", task).Msg("add user to search")
 
 		return nil
 

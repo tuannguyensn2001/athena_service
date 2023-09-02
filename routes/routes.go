@@ -9,6 +9,7 @@ import (
 	"athena_service/services/auth"
 	"athena_service/services/member"
 	"athena_service/services/newsfeed"
+	"athena_service/services/notification"
 	"athena_service/services/workshop"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -32,6 +33,10 @@ func Bootstrap(r *gin.Engine, config config.Config, infra infra.Infra) {
 	memberRepsitory := member.NewRepository(infra.Db)
 	memberUsecase := member.NewUsecase(memberRepsitory, policy)
 	memberTransport := member.NewTransport(memberUsecase)
+
+	notificationRepository := notification.NewRepository(infra.Db)
+	notificationUsecase := notification.NewUsecase(notificationRepository, policy)
+	notificationTransport := notification.NewHttpTransport(notificationUsecase)
 
 	checkRole := middlewares.Role(policy)
 	checkAuth := middlewares.Auth(authUsecase)
@@ -65,6 +70,9 @@ func Bootstrap(r *gin.Engine, config config.Config, infra infra.Infra) {
 	r.POST("/api/v1/members/student", checkAuth, checkRole(constant.TEACHER), memberTransport.AddStudent)
 	r.POST("/api/v1/members/student/request-join", checkAuth, checkRole(constant.STUDENT), memberTransport.StudentRequestJoin)
 	r.GET("/api/v1/members/students/workshop/:id", checkAuth, checkRole(constant.TEACHER), memberTransport.GetStudent)
+
+	r.POST("/api/v1/notifications/workshop", checkAuth, notificationTransport.CreateNotificationWorkshop)
+	r.GET("/api/v1/notifications/workshop/:workshopId", checkAuth, notificationTransport.GetNotificationWorkshop)
 }
 
 func initPolicy(infra infra.Infra) policies.Policy {
