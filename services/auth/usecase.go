@@ -11,7 +11,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dgraph-io/badger/v3"
-	"github.com/go-faker/faker/v4"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/meilisearch/meilisearch-go"
 	"golang.org/x/crypto/bcrypt"
@@ -31,7 +30,6 @@ func NewUsecase(repo repo, badger *badger.DB, search *meilisearch.Client) usecas
 }
 
 func (u usecase) Register(ctx context.Context, input dto.RegisterInput) error {
-	input.Phone = faker.Phonenumber()
 	_, err := u.repository.FindByPhone(ctx, input.Phone)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return err
@@ -46,7 +44,6 @@ func (u usecase) Register(ctx context.Context, input dto.RegisterInput) error {
 	}
 
 	err = u.repository.Transaction(ctx, func(ctx context.Context) error {
-		input.Username = faker.Name()
 		user := entities.User{
 			Phone:    input.Phone,
 			Email:    input.Email,
