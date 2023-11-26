@@ -59,7 +59,7 @@ func (u usecase) CreatePost(ctx context.Context, input dto.CreatePostInput) erro
 	if err != nil {
 		return err
 	}
-	err = pusherClient.Trigger(fmt.Sprintf("newsfeed-workshop-%s", workshop.Code), "new-post", newPost)
+	err = pusherClient.Trigger(fmt.Sprintf("newsfeed-workshop-%#s", workshop.Code), "new-post", newPost)
 	if err != nil {
 		return err
 	}
@@ -195,6 +195,7 @@ func (u usecase) CreateComment(ctx context.Context, input dto.CreateCommentInput
 	}
 	isMember, err := u.policy.IsMember(ctx, workshop.Id)
 	if err != nil || !isMember {
+
 		return app.NewForbiddenError("forbidden").WithError(err)
 	}
 
